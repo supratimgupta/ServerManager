@@ -14,6 +14,6 @@ namespace GSM.Common.Contracts
 
         ServerDTO GetServerInformation(string name, string ip);
 
-        void Dispose();
+        //void Dispose();
     }
 }

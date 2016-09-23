@@ -32,6 +32,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -39,6 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Contracts\IRemoteProcSvc.cs" />
     <Compile Include="Contracts\IServerDataSvc.cs" />
     <Compile Include="Contracts\IServerSvc.cs" />
     <Compile Include="DTOs\ActionDTO.cs" />

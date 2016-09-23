@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using GSM.Common.Contracts;
 using GSM.Common.DTOs;
 using System.Net.Http.Headers;
+using System.ServiceModel;
 
 namespace Gladiator_SrvMgr.Controllers
 {
@@ -64,6 +65,28 @@ namespace Gladiator_SrvMgr.Controllers
             return Ok(new { Status = true, Message = "" });
         }
 
+        [Route("stopProcess")]
+        [HttpPost]
+        public IHttpActionResult StopProcess([FromBody]string processId)
+        {
+            int intProcId = Int32.Parse(processId);
+
+            BasicHttpBinding wcfBinding = new BasicHttpBinding();
+            EndpointAddress wcfEndPoint = new EndpointAddress("http://localhost:46963/Controller");
+            ChannelFactory<GSM.Common.Contracts.IRemoteProcSvc> cfToCallWcf = new ChannelFactory<GSM.Common.Contracts.IRemoteProcSvc>(wcfBinding, wcfEndPoint);
+            GSM.Common.Contracts.IRemoteProcSvc instance = cfToCallWcf.CreateChannel();
+            // Call Service.
+            bool status = instance.EndProcess(intProcId);
+            string message = string.Empty;
+            if(!status)
+            {
+                message = "Failed to stop process.";
+            }
+
+            cfToCallWcf.Close();
+
+            return Ok(new { Status = status, Message = message });
+        }
 
         /// <summary>
         /// Cannot use this architecture now, have memory leak problem

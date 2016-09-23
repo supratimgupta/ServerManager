@@ -5,6 +5,8 @@
 </head>
 <body>
     <div>
+        <input type="text" placeholder="Enter process id" id="txtProcId" />
+        <button id="btnEndProc">End proc</button>
         <span id="spnProcessCount"></span>
         <!--<input type="button" onclick="startChecking();" />-->
         <!--Script references. -->
@@ -45,6 +47,30 @@
                     alert('hub started');
                 });
             });
+
+            $(document).ready(function () {
+
+                $("#btnEndProc").click(function () {
+                    var processIdVal = $("#txtProcId").val();
+                    $.ajax({
+                        url: 'api/server/stopProcess',
+                        data: { "": processIdVal },
+                        error: function (err) {
+                            //debugger;
+                            //alert(err);
+                        },
+                        dataType: 'jsonp',
+                        success: function (data) {
+                            debugger;
+                            alert(data);
+                        },
+                        type: 'POST'
+                    });;
+
+                });
+
+            });
+
         </script>
     </div>
 </body>
