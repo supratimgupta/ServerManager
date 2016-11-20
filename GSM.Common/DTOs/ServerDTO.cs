@@ -10,6 +10,8 @@ namespace GSM.Common.DTOs
     {
         public string ServerID { get; set; }
 
+        public string ServerIP { get; set; }
+
         public string ServerName { get; set; }
 
         public string Description { get; set; }
@@ -17,5 +19,7 @@ namespace GSM.Common.DTOs
         public List<DriveDTO> Drives { get; set; }
 
         public List<ProcessDTO> Processes { get; set; }
+
+        public string WCFHostingURL { get; set; }
     }
 }

@@ -7,6 +7,8 @@ using GSM.Common.Contracts;
 using GSM.Common.DTOs;
 using System.IO;
 using System.Diagnostics;
+using System.Net;
+using System.Net.Sockets;
 
 namespace GSM.Service.Implementations
 {
@@ -27,6 +29,7 @@ namespace GSM.Service.Implementations
             _arrProcesses = Process.GetProcesses();         //Has memory leakage problem, need to find out another way
             this.MergeDriveInfo(ref _serverDTO, _arrDriveInfo);
             this.MergeProcessInfo(ref _serverDTO, _arrProcesses);
+            this.MergeNetworkInfo(ref _serverDTO);
             return _serverDTO;
         }
 
@@ -36,6 +39,35 @@ namespace GSM.Service.Implementations
             _arrDriveInfo = null;
             _arrProcesses = null;
             GC.Collect();
+        }
+
+        private void MergeNetworkInfo(ref ServerDTO serverDTO)
+        {
+            serverDTO.ServerIP = GetLocalIPAddress();
+            serverDTO.ServerName = GetMachineName();
+        }
+
+        public static string GetLocalIPAddress()
+        {
+            string ipAddress = string.Empty;
+            if(System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
+            {
+                var host = Dns.GetHostEntry(Dns.GetHostName());
+                foreach (var ip in host.AddressList)
+                {
+                    if (ip.AddressFamily == AddressFamily.InterNetwork)
+                    {
+                        ipAddress = ip.ToString();
+                        break;
+                    }
+                }
+            }
+            return ipAddress;
+        }
+
+        public static string GetMachineName()
+        {
+            return System.Environment.MachineName;
         }
 
         private void MergeProcessInfo(ref ServerDTO serverDTO, Process[] arrProcessInfo)

@@ -187,10 +187,15 @@
     <Compile Include="Hubs\NotificationHub.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
-    <Compile Include="TestHub.cs" />
+    <Compile Include="Utilities\ServerTracker.cs" />
     <Compile Include="Utilities\ThreadTracker.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="App_Data\ServerMgrData.mdf" />
+    <Content Include="App_Data\ServerMgrData_log.ldf">
+      <DependentUpon>ServerMgrData.mdf</DependentUpon>
+    </Content>
+    <Content Include="connDetails.html" />
     <Content Include="Content\themes\base\images\ui-bg_flat_0_aaaaaa_40x100.png" />
     <Content Include="Content\themes\base\images\ui-bg_flat_75_ffffff_40x100.png" />
     <Content Include="Content\themes\base\images\ui-bg_glass_55_fbf9ee_1x400.png" />
@@ -295,7 +300,6 @@
     <Content Include="Views\Shared\_Layout.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="App_Data\" />
     <Folder Include="Client\lib\" />
     <Folder Include="Client\modules\application\" />
     <Folder Include="Client\modules\dashboard\" />

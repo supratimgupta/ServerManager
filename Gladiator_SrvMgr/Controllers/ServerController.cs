@@ -20,34 +20,6 @@ namespace Gladiator_SrvMgr.Controllers
         private object _lockObj = new object();
         Utilities.ThreadTracker _thTracker;
 
-        private async Task RunMonitor()
-        {
-            ServerDTO serverDTO = null;
-            while (true)
-            {
-                if (_thTracker == null)
-                {
-                    _thTracker = Utilities.ThreadTracker.GetInstance();
-                }
-                if (_thTracker.IsAppStopped)
-                {
-                    break;
-                }
-                using (_serverSvc = new GSM.Service.Implementations.ServerSvc())
-                {
-                    serverDTO = _serverSvc.GetServerInformation();
-                    Hubs.NotificationHub hub = new Hubs.NotificationHub();
-                    hub.SendDetails(serverDTO);
-                    serverDTO = null;
-                    hub = null;
-
-                    _serverSvc = null;
-
-                    await Task.Delay(1000);
-                }
-            }
-        }
-
         /// <summary>
         /// Will be called from external modules
         /// </summary>
@@ -57,6 +29,16 @@ namespace Gladiator_SrvMgr.Controllers
         [HttpPost]
         public IHttpActionResult SendDetail(ServerDTO serverDTO)
         {
+            Utilities.ServerTracker srvTrck = Utilities.ServerTracker.GetInstance;
+            ServerDTO srvr = srvTrck.CurrentServerLists.FirstOrDefault(srv => srv.ServerIP == serverDTO.ServerIP);
+            if(srvr==null)
+            {
+                srvTrck.CurrentServerLists.Add(serverDTO);
+            }
+            else
+            {
+                srvr = serverDTO;
+            }
             Hubs.NotificationHub hub = new Hubs.NotificationHub();
             hub.SendDetails(serverDTO);
             serverDTO = null;
@@ -67,60 +49,54 @@ namespace Gladiator_SrvMgr.Controllers
 
         [Route("stopProcess")]
         [HttpPost]
-        public IHttpActionResult StopProcess([FromBody]string processId)
+        public IHttpActionResult StopProcess([FromBody]string processId, [FromBody]string serverIP)
         {
-            int intProcId = Int32.Parse(processId);
+            Utilities.ServerTracker srvTrck = Utilities.ServerTracker.GetInstance;
+            ServerDTO srvr = srvTrck.CurrentServerLists.FirstOrDefault(srv => srv.ServerIP == serverIP);
 
-            BasicHttpBinding wcfBinding = new BasicHttpBinding();
-            EndpointAddress wcfEndPoint = new EndpointAddress("http://localhost:46963/Controller");
-            ChannelFactory<GSM.Common.Contracts.IRemoteProcSvc> cfToCallWcf = new ChannelFactory<GSM.Common.Contracts.IRemoteProcSvc>(wcfBinding, wcfEndPoint);
-            GSM.Common.Contracts.IRemoteProcSvc instance = cfToCallWcf.CreateChannel();
-            // Call Service.
-            bool status = instance.EndProcess(intProcId);
+            bool status = true;
             string message = string.Empty;
-            if(!status)
-            {
-                message = "Failed to stop process.";
-            }
 
-            cfToCallWcf.Close();
+            if(srvr!=null)
+            {
+                int intProcId = Int32.Parse(processId);
+
+                BasicHttpBinding wcfBinding = new BasicHttpBinding();
+                EndpointAddress wcfEndPoint = new EndpointAddress(srvr.WCFHostingURL);
+                ChannelFactory<GSM.Common.Contracts.IRemoteProcSvc> cfToCallWcf = new ChannelFactory<GSM.Common.Contracts.IRemoteProcSvc>(wcfBinding, wcfEndPoint);
+                GSM.Common.Contracts.IRemoteProcSvc instance = cfToCallWcf.CreateChannel();
+                // Call Service.
+                status = instance.EndProcess(intProcId);
+                //string message = string.Empty;
+                if (!status)
+                {
+                    message = "Failed to stop process.";
+                }
+
+                cfToCallWcf.Close();
+            }
 
             return Ok(new { Status = status, Message = message });
         }
 
-        /// <summary>
-        /// Cannot use this architecture now, have memory leak problem
-        /// </summary>
-        /// <returns></returns>
-        [Route("callCurrentServer")]
+        [Route("getSummary")]
         [HttpPost]
-        public IHttpActionResult CallCurrentServer()
+        public IHttpActionResult GetSummary()
         {
-            lock(_lockObj)
+            List<ConnectionSummaryDTO> lstConnSum = new List<ConnectionSummaryDTO>();
+            Utilities.ServerTracker srvTrck = Utilities.ServerTracker.GetInstance;
+            if(srvTrck.CurrentServerLists!=null)
             {
-                if(_thTracker==null)
+                ConnectionSummaryDTO connSum = null;
+                for(int i=0;i<srvTrck.CurrentServerLists.Count;i++)
                 {
-                    _thTracker = Utilities.ThreadTracker.GetInstance();
-                }
-                Dictionary<string, int> dicJobs = _thTracker.GetRunningJobs();
-                if (dicJobs == null || !dicJobs.Keys.Contains("CURRENT_SERVER") || dicJobs["CURRENT_SERVER"] <= 0)
-                {
-                    Task.Factory.StartNew(async () => await RunMonitor());
-                    if(!dicJobs.Keys.Contains(""))
-                    {
-                        dicJobs.Add("CURRENT_SERVER", 1);
-                    }
-                    else if (dicJobs["CURRENT_SERVER"] < 0)
-                    {
-                        dicJobs["CURRENT_SERVER"] = 1;
-                    }
-                    else
-                    {
-                        dicJobs["CURRENT_SERVER"] = dicJobs["CURRENT_SERVER"]++;
-                    }
+                    connSum = new ConnectionSummaryDTO();
+                    connSum.IpAddress = srvTrck.CurrentServerLists[i].ServerIP;
+                    connSum.SystemName = srvTrck.CurrentServerLists[i].ServerName;
+                    lstConnSum.Add(connSum);
                 }
             }
-            return Ok("completed the run");
+            return Ok(lstConnSum);
         }
     }
 }
