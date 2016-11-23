@@ -50,14 +50,17 @@
                 startHub();
                 $("#btnEndProc").click(function () {
                     var processIdVal = $("#txtProcId").val();
+                    var process = new Object();
+                    process.ServerIP = getParameterByName("ipAddress");
+                    process.ProcessId = processIdVal;
                     $.ajax({
                         url: 'api/server/stopProcess',
-                        data: { ip: processIdVal },
+                        data: process,
                         error: function (err) {
                             //debugger;
                             //alert(err);
                         },
-                        dataType: 'jsonp',
+                        dataType: 'JSON',
                         success: function (data) {
                             debugger;
                             alert(data);

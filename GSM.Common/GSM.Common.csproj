@@ -46,8 +46,8 @@
     <Compile Include="DTOs\ActionDTO.cs" />
     <Compile Include="DTOs\ConnectionSummaryDTO.cs" />
     <Compile Include="DTOs\DriveDTO.cs" />
-    <Compile Include="DTOs\GroupDTO.cs" />
     <Compile Include="DTOs\ProcessDTO.cs" />
+    <Compile Include="DTOs\ReqProcessDTO.cs" />
     <Compile Include="DTOs\RoleActionDTO.cs" />
     <Compile Include="DTOs\RoleDTO.cs" />
     <Compile Include="DTOs\ServerDTO.cs" />

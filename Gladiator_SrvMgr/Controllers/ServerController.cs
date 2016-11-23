@@ -18,7 +18,7 @@ namespace Gladiator_SrvMgr.Controllers
     {
         private IServerSvc _serverSvc = new GSM.Service.Implementations.ServerSvc();
         private object _lockObj = new object();
-        Utilities.ThreadTracker _thTracker;
+        //Utilities.ThreadTracker _thTracker;
 
         /// <summary>
         /// Will be called from external modules
@@ -49,17 +49,17 @@ namespace Gladiator_SrvMgr.Controllers
 
         [Route("stopProcess")]
         [HttpPost]
-        public IHttpActionResult StopProcess([FromBody]string processId, [FromBody]string serverIP)
+        public IHttpActionResult StopProcess([FromBody]ReqProcessDTO process)
         {
             Utilities.ServerTracker srvTrck = Utilities.ServerTracker.GetInstance;
-            ServerDTO srvr = srvTrck.CurrentServerLists.FirstOrDefault(srv => srv.ServerIP == serverIP);
+            ServerDTO srvr = srvTrck.CurrentServerLists.FirstOrDefault(srv => srv.ServerIP == process.ServerIP);
 
             bool status = true;
             string message = string.Empty;
 
             if(srvr!=null)
             {
-                int intProcId = Int32.Parse(processId);
+                int intProcId = Int32.Parse(process.ProcessId);
 
                 BasicHttpBinding wcfBinding = new BasicHttpBinding();
                 EndpointAddress wcfEndPoint = new EndpointAddress(srvr.WCFHostingURL);
